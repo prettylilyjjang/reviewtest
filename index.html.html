@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>G-MAP Basic A-1 Review Test</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green1:#fde6ef;
+    --green2:#f7a8c4;
+    --purple:#7c6fe0;
+    --ink:#1f2430;
+    --sub:#5b6270;
+    --line:#e2e5ea;
+    --badge:#7c6fe0;
+    --pagebg:#f2f3f5;
+    --subtext:#8c3a5c;
+    --font-display:'Jua','Apple SD Gothic Neo',sans-serif;
+    --font-body:'Gowun Dodum','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:var(--font-body);
+    background:var(--pagebg);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- toolbar (screen only) ---------- */
+  .toolbar{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    padding:12px 20px;
+    background:#ffffffee;
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  .toolbar h1{font-family:var(--font-display); font-weight:400; font-size:17px; margin:0; margin-right:auto; color:var(--ink);}
+  .btn{
+    border:1px solid var(--line); background:#fff; color:var(--ink);
+    padding:9px 15px; border-radius:20px; font-size:13.5px; cursor:pointer;
+    font-family:var(--font-display); font-weight:400;
+  }
+  .btn:hover{background:#f5f6f8;}
+  .btn.primary{background:var(--purple); color:#fff; border-color:var(--purple);}
+  .btn.primary:hover{background:#6a5dd1;}
+  .btn.answers{background:#2f8f4e; color:#fff; border-color:#2f8f4e;}
+  .btn.answers:hover{background:#267a41;}
+  .btn.tool{background:#ffb648; color:#4a3200; border-color:#ffb648;}
+  .btn.tool:hover{background:#f3a734;}
+  .btn.ghost{background:#fff;}
+  label.chk{display:flex; align-items:center; gap:6px; font-size:13.5px; color:var(--sub); user-select:none; font-family:var(--font-body);}
+  .divider{width:1px; align-self:stretch; background:var(--line); margin:0 4px;}
+
+  /* ---------- collapsible tool panels ---------- */
+  .panel{
+    max-width:900px; margin:16px auto 0; padding:0 16px;
+    display:none;
+  }
+  .panel.open{display:block;}
+  .panel-card{
+    background:#fff; border-radius:12px; border:1px solid var(--line);
+    box-shadow:0 2px 10px rgba(0,0,0,.06); padding:18px 20px;
+  }
+  .panel-card h2{
+    font-family:var(--font-display); font-weight:400; font-size:16px; margin:0 0 10px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .panel-card textarea{
+    width:100%; min-height:180px; resize:vertical;
+    border:1px solid var(--line); border-radius:10px; padding:12px 14px;
+    font-family:'Pretendard','Malgun Gothic',monospace; font-size:13px; line-height:1.6;
+    color:var(--ink);
+  }
+  .panel-actions{display:flex; align-items:center; gap:10px; margin-top:10px;}
+  .status-msg{font-size:13px; color:var(--sub); font-weight:600;}
+  .status-msg.ok{color:#2f8f4e;}
+  .status-msg.err{color:#d1495b;}
+
+  .issue{
+    display:flex; gap:8px; align-items:flex-start;
+    padding:9px 10px; border-radius:8px; font-size:13.5px; line-height:1.6;
+    margin-bottom:6px; border:1px solid var(--line); background:#f8f9fb;
+  }
+  .issue.level-error{background:#fdecee; border-color:#f6c6cc; color:#8c2331;}
+  .issue.level-warn{background:#fff7e6; border-color:#ffe1a8; color:#7a5200;}
+  .issue.level-info{background:#eef4ff; border-color:#c9dcff; color:#254a8c;}
+  .issue .ic{flex:none;}
+  .issue-ok{
+    padding:12px; text-align:center; font-weight:700; color:#2f8f4e;
+    background:#eaf7ee; border:1px solid #bfe6cb; border-radius:8px; font-size:14px;
+  }
+
+  /* ---------- color panel ---------- */
+  .swatches{display:flex; flex-wrap:wrap; gap:10px; margin:4px 0 14px;}
+  .swatch{
+    border:2px solid var(--line); border-radius:14px; padding:6px 10px 6px 6px; background:#fff;
+    display:flex; align-items:center; gap:8px; cursor:pointer;
+    font-family:var(--font-display); font-size:13px; color:var(--ink);
+  }
+  .swatch:hover{border-color:#bfc4cf;}
+  .swatch.active{border-color:var(--purple); box-shadow:0 0 0 2px #7c6fe033;}
+  .swatch .chip{width:46px; height:24px; border-radius:8px; border:1px solid #0000001a;}
+  .color-row{display:flex; flex-wrap:wrap; gap:18px; align-items:center; margin-top:4px;}
+  .color-row label{
+    display:flex; align-items:center; gap:8px; font-size:13.5px; color:var(--sub); font-family:var(--font-body); font-weight:700;
+  }
+  .color-row input[type=color]{
+    width:38px; height:30px; padding:0; border:1px solid var(--line); border-radius:8px; background:#fff; cursor:pointer;
+  }
+
+  .color-row select{ padding:6px 8px; border:1px solid var(--line); border-radius:8px; background:#fff; font-size:13.5px; font-family:inherit; color:var(--ink); }
+
+  /* ---------- page ---------- */
+  .page-wrap{
+    max-width:900px;
+    margin:24px auto 60px;
+    padding:0 16px;
+  }
+  .sheet{
+    background:#fff;
+    border-radius:10px;
+    box-shadow:0 2px 14px rgba(0,0,0,.08);
+    overflow:hidden;
+    margin-bottom:28px;
+  }
+
+  /* header banner */
+  .banner{
+    background:linear-gradient(120deg,var(--green1) 0%, var(--green2) 100%);
+    padding:18px 26px;
+    display:flex; align-items:center; gap:18px;
+    position:relative;
+  }
+  .logo{
+    background:#fff;
+    border:2px solid var(--ink);
+    border-radius:20px 20px 20px 4px;
+    padding:8px 18px;
+    font-family:var(--font-display); font-weight:400;
+    font-size:19px;
+    white-space:nowrap;
+  }
+  .title-block{flex:1; min-width:0;}
+  .title-block .main{font-family:var(--font-display); font-weight:400; font-size:18px; line-height:1.35;}
+  .title-block .sub{font-size:12.5px; color:var(--subtext); margin-top:3px; font-weight:600;}
+  .title-block [contenteditable="true"]{ outline:none; border-radius:6px; padding:1px 4px; margin:-1px -4px; }
+  .title-block [contenteditable="true"]:hover{ background:#ffffff70; }
+  .title-block [contenteditable="true"]:focus{ background:#ffffffb0; box-shadow:0 0 0 2px #ffffffcc; }
+  @media print{ .title-block [contenteditable="true"]:hover, .title-block [contenteditable="true"]:focus{ background:none; box-shadow:none; } }
+  .name-box{
+    background:#fff;
+    border-radius:14px;
+    padding:8px 14px;
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--sub);
+    min-width:150px;
+    text-align:left;
+    border:1px solid #ffffffaa;
+    line-height:2;
+  }
+  .name-box .nb-row{white-space:nowrap;}
+
+  .body-pad{padding:30px 34px 40px;}
+  .columns{
+    columns:2;
+    column-gap:40px;
+  }
+  @media (max-width:700px){ .columns{columns:1;} }
+
+  .q{
+    break-inside:avoid;
+    -webkit-column-break-inside:avoid;
+    margin-bottom:26px;
+  }
+  .q-head{
+    display:flex; gap:10px; align-items:flex-start;
+    font-weight:700; font-size:15px; margin-bottom:9px; line-height:1.5;
+  }
+  .q-num{
+    flex:none;
+    background:var(--badge);
+    color:#fff;
+    width:24px;height:24px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-display); font-weight:400;
+    font-size:13.5px;
+    margin-top:1px;
+  }
+  .q-text{line-height:1.6; word-break:keep-all; overflow-wrap:break-word;}
+  .q-prompt{
+    background:#f7f8fa;
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:14px 16px;
+    font-size:15px;
+    line-height:1.8;
+    margin:11px 0 12px 34px;
+    font-weight:500;
+  }
+  .options{
+    margin-left:34px;
+    font-size:14.5px;
+    line-height:1.95;
+    font-weight:500;
+    word-break:keep-all; overflow-wrap:break-word;
+  }
+  .options div{display:flex; gap:7px;}
+  .opt-mark{flex:none; font-weight:700;}
+  .blank-line{
+    margin-left:34px;
+    border-bottom:1.5px solid var(--ink);
+    height:36px;
+  }
+  .blank-line + .blank-line{margin-top:0;}
+
+  /* answer / explanation block (inline preview on test page) */
+  .ans-block{
+    word-break:keep-all; overflow-wrap:break-word;
+    margin-left:34px;
+    margin-top:12px;
+    background:#f2f0fd;
+    border:1px solid #d8d3fb;
+    border-radius:12px;
+    padding:13px 16px;
+    font-size:13.5px;
+    line-height:1.85;
+    color:#3a3550;
+    display:none;
+  }
+  .ans-block .answer-line{font-family:var(--font-display); font-weight:400; color:var(--purple); margin-bottom:6px; font-size:14.5px;}
+  body.show-answers .ans-block{display:block;}
+
+  .section-title{
+    font-family:var(--font-display); font-weight:400; font-size:17px; margin:6px 0 20px;
+    padding-bottom:9px; border-bottom:2px solid var(--ink);
+    columns:1;
+    break-after:avoid; page-break-after:avoid;
+  }
+  #saq-title{ margin-top:38px; }
+
+  footer.page-footer{
+    text-align:center; font-size:11.5px; color:#9aa0ab; padding:16px 0 26px; font-weight:500;
+  }
+
+  /* ---------- dedicated answer-key sheet ---------- */
+  .answer-sheet-page{ display:none; }
+  body.show-answer-sheet .answer-sheet-page{ display:block; }
+  /* 해설지 미리보기 중에는 시험지는 화면에서 숨겨서 해설지만 보이게 */
+  body.show-answer-sheet .test-pages{ display:none; }
+
+  .ak-item{
+    border-bottom:1px dashed var(--line);
+    padding:14px 0;
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  .ak-item:first-child{padding-top:0;}
+  .ak-item:last-child{border-bottom:none;}
+  .ak-head{
+    display:flex; align-items:center; gap:10px;
+    font-weight:800; font-size:15px; margin-bottom:6px;
+  }
+  .ak-num{
+    flex:none; background:var(--ink); color:#fff;
+    width:25px;height:25px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-display); font-weight:400; font-size:13.5px;
+  }
+  .ak-answer{color:var(--purple); font-family:var(--font-display); font-weight:400; font-size:15px;}
+  .ak-exp{
+    margin-left:35px; font-size:14px; line-height:1.85; color:#3a3d46; font-weight:500;
+    word-break:keep-all; overflow-wrap:break-word;
+  }
+  .accept{font-family:var(--font-body); font-weight:600; font-size:12.5px; color:#7b8190; margin-left:4px; word-break:keep-all;}
+
+  /* ---------- print ---------- */
+  @page{ size:A4; margin:12mm 10mm 15mm; @bottom-center{ content:"- " counter(page) " -"; font-size:10px; color:#9aa0ab; } }
+  @media print{
+    .toolbar, .panel, .panel.open{display:none !important;}
+    body{background:#fff;}
+    .page-wrap{margin:0; padding:0; max-width:none;}
+    .sheet{
+      box-shadow:none; border-radius:0; margin:0;
+      page-break-after:always;
+    }
+    .sheet:last-child{page-break-after:auto;}
+    .banner{ -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+    .ans-block{ -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+
+    /* 시험지만 인쇄: 해설지 페이지 숨김, 인라인 정답도 숨김 */
+    body.print-test-only .answer-sheet-page{ display:none !important; }
+    body.print-test-only .ans-block{ display:none !important; }
+
+    /* 해설지만 인쇄: 시험지 페이지 숨김, 해설지 페이지만 노출 */
+    body.print-answers-only .test-pages{ display:none !important; }
+    body.print-answers-only .answer-sheet-page{ display:block !important; }
+
+  }
+@media screen{ .page-footer[contenteditable]:hover{ outline:1px dashed #b9a8ee; outline-offset:2px; cursor:text; } }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <h1>📝 시험지 대시보드</h1>
+  <label class="chk"><input type="checkbox" id="answerToggle"> 시험지에 정답 미리보기</label>
+  <label class="chk"><input type="checkbox" id="answerSheetToggle"> 해설지 미리보기</label>
+  <div class="divider"></div>
+  <button class="btn ghost" onclick="togglePanel('pastePanel')">📋 ChatGPT 글 붙여넣기</button>
+  <button class="btn tool" onclick="openCheckPanel()">🔍 문항 유효성 검수</button>
+  <button class="btn ghost" onclick="togglePanel('colorPanel')">🎨 배경색 바꾸기</button>
+  <button class="btn ghost" onclick="togglePanel('fontPanel')">🔤 글씨체 바꾸기</button>
+  <div class="divider"></div>
+  <button class="btn ghost" onclick="saveWorksheet()">💾 시험지 저장</button>
+  <button class="btn ghost" onclick="document.getElementById('loadFileInput').click()">📂 불러오기</button>
+  <input type="file" id="loadFileInput" accept="application/json" style="display:none">
+  <div class="divider"></div>
+  <button class="btn primary" onclick="printMode('print-test-only')">🖨️ 시험지만 인쇄</button>
+  <button class="btn answers" onclick="printMode('print-answers-only')">📘 해설지만 인쇄</button>
+</div>
+
+<!-- ============ 붙여넣기 패널 ============ -->
+<div class="panel" id="pastePanel">
+  <div class="panel-card">
+    <h2>📋 ChatGPT에서 만든 문제 붙여넣기</h2>
+    <p style="font-size:13px; color:var(--sub); margin:0 0 10px; line-height:1.6;">
+      맨 위에 제목 한 줄(선택: 부제 한 줄)을 쓰고 그 아래에 "1. 문제 지문 ... ① ~ ⑤ 보기 ... 정답: ③ ... 해설 ..." 형식으로 된 텍스트를 그대로 붙여넣으면
+      제목·부제도 자동으로 인식해 시험지·해설지 상단에 반영하고,
+      자동으로 이 디자인의 시험지·해설지로 변환됩니다. (보기가 있으면 객관식, 없으면 주관식으로 자동 인식)
+    </p>
+    <textarea id="pasteBox" placeholder="여기에 ChatGPT가 만들어준 문제 텍스트를 붙여넣으세요..."></textarea>
+    <div class="panel-actions">
+      <button class="btn primary" onclick="convertPastedText()">✨ 변환해서 시험지에 반영</button>
+      <button class="btn ghost" onclick="loadDefault()">↩️ 기본 예시로 되돌리기</button>
+      <span class="status-msg" id="pasteStatus"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 검수 패널 ============ -->
+<div class="panel" id="checkPanel">
+  <div class="panel-card">
+    <h2>🔍 문항 유효성 검수 결과</h2>
+    <p style="font-size:12.5px; color:var(--sub); margin:0 0 12px; line-height:1.6;">
+      정답 번호가 실제 보기 내용과 일치하는지(오답 표기), 해설이 정답과 관련된 내용인지(해설 오류·다른 문항과 뒤섞임),
+      보기 중복·번호 누락·빈 정답/해설 등을 규칙 기반으로 점검해요. 다만 완전한 문법 검사기는 아니라서,
+      미묘한 어법 오류까지 100% 잡아내진 못해요 — 아래 경고는 "다시 한 번 눈으로 확인해볼 곳"으로 봐주세요.
+    </p>
+    <div id="checkResults"></div>
+  </div>
+</div>
+
+<!-- ============ 색상 패널 ============ -->
+<div class="panel" id="colorPanel">
+  <div class="panel-card">
+    <h2>🎨 배경색 바꾸기</h2>
+    <p style="font-size:12.5px; color:var(--sub); margin:0 0 10px; line-height:1.6;">
+      프리셋을 누르거나 아래 색 상자를 눌러 직접 고르세요. 시험지·해설지 상단 배너 색은 <b>인쇄에도 그대로 반영</b>되고,
+      화면 배경색은 컴퓨터 화면에서만 바뀌어요. 선택한 색은 이 브라우저에 자동 저장되고, 💾 시험지 저장 파일에도 같이 들어가요.
+    </p>
+    <div class="swatches" id="swatchList"></div>
+    <div class="color-row">
+      <label>배너 색 1 <input type="color" id="colBanner1"></label>
+      <label>배너 색 2 <input type="color" id="colBanner2"></label>
+      <label>번호 배지·포인트 색 <input type="color" id="colBadge"></label>
+      <label>화면 배경색 <input type="color" id="colPage"></label>
+      <button class="btn ghost" onclick="resetTheme()">↩️ 기본 색으로</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 글씨체 패널 ============ -->
+<div class="panel" id="fontPanel">
+  <div class="panel-card">
+    <h2>🔤 글씨체 바꾸기</h2>
+    <p style="font-size:12.5px; color:var(--sub); margin:0 0 10px; line-height:1.6;">
+      <b>제목·강조 글씨체</b>는 제목, 문제 번호, 정답 표시에, <b>본문 글씨체</b>는 문제·보기·해설에 적용돼요.
+      고른 글씨체는 인쇄(PDF)에도 그대로 반영되고, 이 브라우저에 자동 저장되며 💾 시험지 저장 파일에도 같이 들어가요.
+      (글씨체는 인터넷에 연결되어 있을 때 불러와요.)
+    </p>
+    <div class="color-row">
+      <label>제목·강조 <select id="fontDisplaySel"></select></label>
+      <label>본문 <select id="fontBodySel"></select></label>
+      <button class="btn ghost" onclick="resetFonts()">↩️ 기본 글씨체로</button>
+    </div>
+    <div id="fontPreview" style="margin-top:12px; padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:#fff;">
+      <div id="fpTitle" style="font-family:var(--font-display); font-size:18px; margin-bottom:6px;">1. 다음 빈칸에 들어갈 알맞은 말을 고르시오.</div>
+      <div id="fpBody" style="font-family:var(--font-body); font-size:14px; line-height:1.7;">Our school festival is in October. ① at ② on ③ in — 월 앞에는 시간 전치사 in을 사용합니다. 0123456789</div>
+    </div>
+  </div>
+</div>
+
+<div class="page-wrap">
+
+  <div class="test-pages">
+    <!-- ============ 시험지 : 객관식 + 주관식을 한 장에 이어서 배치 (용지 절약) ============ -->
+    <div class="sheet">
+      <div class="banner">
+        <div class="logo">LILY T</div>
+        <div class="title-block">
+          <div class="main" id="testTitleMain" contenteditable="true" spellcheck="false">G-MAP Basic A-1 Review Test</div>
+          <div class="sub" id="testTitleSub" contenteditable="true" spellcheck="false">Unit 18~19 종합 · 부정대명사 (Indefinite Pronouns)</div>
+        </div>
+        <div class="name-box">
+          <div class="nb-row">Name : ______________</div>
+          <div class="nb-row">학년/반/번호 : ____ / ____ / ____</div>
+          <div class="nb-row">점수 : ________ / ________</div>
+        </div>
+      </div>
+
+      <div class="body-pad">
+        <div class="columns" id="mcq-columns"></div>
+        <div class="section-title" id="saq-title">[주관식]</div>
+        <div id="short-answer"></div>
+      </div>
+      <footer class="page-footer" id="footerTest" contenteditable="true" spellcheck="false">G-MAP Basic A-1 Review Test</footer>
+    </div>
+  </div>
+
+  <!-- ============ 해설지 (정답 & 해설만 모아둔 별도 페이지) ============ -->
+  <div class="sheet answer-sheet-page">
+    <div class="banner">
+      <div class="logo">LILY T</div>
+      <div class="title-block">
+        <div class="main" id="ansTitleMain" contenteditable="true" spellcheck="false">G-MAP Basic A-1 Review Test — 해설지</div>
+        <div class="sub" id="ansTitleSub" contenteditable="true" spellcheck="false">Unit 18~19 종합 · 부정대명사 (Indefinite Pronouns) · Answer Key</div>
+      </div>
+    </div>
+    <div class="body-pad">
+      <div id="answer-key"></div>
+    </div>
+    <footer class="page-footer" id="footerAns" contenteditable="true" spellcheck="false">G-MAP Basic A-1 Review Test · 해설지</footer>
+  </div>
+
+</div>
+
+
+<script>
+/* ================= 기본 예시 데이터 ================= */
+const DEFAULT_MCQ = [
+{n:1, text:"다음 빈칸에 들어갈 <u>알맞은 대명사</u>를 고르시오.",
+ prompt:"I lost my cell phone, so I had to buy a new ____________.",
+ opts:["it","another","one","them","ones"],
+ answer:"③ one",
+ exp:"잃어버린 '바로 그 휴대폰(it)'을 다시 산 것이 아니라, 같은 종류의 불특정한 새 휴대폰 하나를 산 것이므로 부정대명사 one이 들어가야 합니다. (a new cell phone → a new one)"},
+{n:2, text:"다음 빈칸 (A)와 (B)에 들어갈 말이 <u>알맞게 짝지어진</u> 것을 고르시오.",
+ prompt:"__________ students like soccer, while __________ like basketball.",
+ opts:["Some — other","Any — others","One — the others","Some — another","Some — others"],
+ answer:"⑤ Some — others",
+ exp:"막연한 다수 중 '몇몇은 ~, 다른 몇몇은 ~'는 「Some ~, while others ~」 구문. others = other students. other는 뒤에 명사가 필요하지만 others는 단독 사용 가능."},
+{n:3, text:"다음 빈칸 (A)와 (B)에 들어갈 말이 <u>알맞게 짝지어진</u> 것을 고르시오.",
+ prompt:"There are three puppies. One is black, ( A ) is white, and ( B ) is grey.",
+ opts:["another — other","another — the other","the other — another","other — the others","others — the other"],
+ answer:"② another — the other",
+ exp:"셋 중 하나씩 가리킬 때: One ~, another ~, the other ~ 순서로 사용."},
+{n:4, text:"다음 중 어법상 <u>틀린</u> 문장을 고르시오.",
+ prompt:"",
+ opts:["Each boy is wearing a unique costume.","All the children come with their parents.","Both of my sisters are very pretty.","Each boys have a special gift.","Each of them is holding a paper bag."],
+ answer:"④ Each boys have a special gift.",
+ exp:"Each가 명사를 직접 꾸밀 때는 단수 명사 + 단수 동사가 와야 합니다. Each boys have → Each boy has."},
+{n:5, text:"다음 빈칸 (A)와 (B)에 들어갈 말이 <u>알맞게 짝지어진</u> 것을 고르시오.",
+ prompt:"• She took the medicine ( A ) four hours.<br>• I'd like to give her ( B ) chance.",
+ opts:["every — another","every — other","each — another","all — other","both — another"],
+ answer:"① every — another",
+ exp:"(A) '~마다'는 「every + 기수 + 복수명사」: every four hours. (B) '또 다른 하나의'는 뒤에 단수명사가 오므로 another: another chance."},
+{n:6, text:"다음 빈칸에 들어갈 말로 가장 <u>알맞은</u> 것을 고르시오.",
+ prompt:"I have two sisters. One is a doctor, and ____________ is a teacher.",
+ opts:["another","others","the other","other","some"],
+ answer:"③ the other",
+ exp:"둘 중 하나를 One이라 하면 나머지 하나는 the other. (two → one ~, the other ~)"},
+{n:7, text:"다음 빈칸에 들어갈 <u>알맞은 대명사</u>를 고르시오.",
+ prompt:"Those shoes look good. Can I try on the blue ____________?",
+ opts:["one","it","them","another","ones"],
+ answer:"⑤ ones",
+ exp:"shoes는 복수 명사이므로 단수형 one이 아니라 복수형 ones. (the blue shoes → the blue ones)"},
+{n:8, text:"다음 빈칸에 <u>공통으로 들어갈</u> 알맞은 말을 고르시오.",
+ prompt:"• ____________ the information is correct.<br>• ____________ of the water is clean.",
+ opts:["Each","All","Both","Some","Every"],
+ answer:"② All",
+ exp:"information, water는 셀 수 없는 명사. All은 「All + 명사」/「All of + 명사」 둘 다 가능. Each, Every, Both는 불가."},
+{n:9, text:"다음 중 어법상 <u>올바른</u> 문장을 고르시오.",
+ prompt:"",
+ opts:["Both teams has a 50/50 chance to win.","Each of the essays are well written.","All of these books is interesting.","Both of them are going to buy a laptop.","Both of my parents likes to cook."],
+ answer:"④ Both of them are going to buy a laptop.",
+ exp:"Both는 항상 복수 취급 → are. (① has→have ② are→is ③ is→are ⑤ likes→like)"},
+{n:10, text:"주어진 두 문장의 뜻이 같도록 할 때 빈칸에 <u>알맞은 말</u>을 고르시오.",
+ prompt:"Do you have any other bags in different colors?<br>= Do you have any ____________ in different colors?",
+ opts:["others","another","other","the other","one"],
+ answer:"① others",
+ exp:"복수명사 bags의 반복을 피하며 '다른 것들'을 나타내므로 others."},
+{n:11, text:"다음 중 밑줄 친 대명사의 쓰임이 어법상 <u>어색한</u> 문장을 고르시오.",
+ prompt:"",
+ opts:["This book is very interesting. Would you like to read it?","He is always kind to others.","There is other thing you need to check.","You can take some of the cookies, not all of them.","Some of the students didn't hand in their homework."],
+ answer:"③ There is other thing you need to check.",
+ exp:"other는 단수명사 앞에서 '또 다른 하나'로 쓸 수 없음. another thing으로 고쳐야 함."},
+{n:12, text:"다음 빈칸에 들어갈 동사의 형태가 나머지와 <u>다른</u> 하나를 고르시오.",
+ prompt:"",
+ opts:["Both of the boys ____ kind and honest. (be)","All the children ____ with their parents. (come)","Some of them ____ to go to the zoo. (want)","All the answers ____ correct. (be)","Each of the students ____ a present. (get)"],
+ answer:"⑤ Each of the students ____ a present. (get)",
+ exp:"「Each of + 복수명사」는 문법적으로 단수 취급 → gets. 나머지는 모두 복수 취급."},
+{n:13, text:"다음 중 어법상 오류가 전혀 없는 <u>올바른</u> 문장을 고르시오.",
+ prompt:"",
+ opts:["One of the two shirts are mine, and the other is yours.","The other children ate pizza for lunch.","Every of the students passed the exam.","She will stay at this hotel for other day.","Both of us knows her very well."],
+ answer:"② The other children ate pizza for lunch.",
+ exp:"「the other + 복수명사」= 나머지 ~들. (①are→is ③Every of X ④other→another ⑤knows→know)"}
+];
+
+const DEFAULT_SAQ = [
+{n:14, text:"다음 문장에서 어법상 <u>틀린 부분을 찾아 바르게 고쳐 쓰시오.</u>",
+ prompt:"I have two cats. One is white, and another is black.",
+ answer:"another → the other",
+ exp:"고양이가 2마리로 전체 개수가 정해졌으므로, 둘 중 하나를 One이라 했으면 나머지 하나는 the other로 나타냅니다.<br>→ I have two cats. One is white, and the other is black."},
+{n:15, text:"우리말과 일치하도록 주어진 단어를 <u>모두 사용하여 알맞게 배열하시오.</u>",
+ prompt:"우리말: 각각의 학생들은 선물을 받을 것이다.<br>단어: ( student / of / going / get / is / each / the / to / a present )<br>조건: 필요시 단어 형태 변형 및 대소문자에 유의할 것.",
+ answer:"Each of the students is going to get a present.",
+ exp:"'각각의 학생들'은 「Each of the + 복수명사(students)」. Each가 핵심 주어이므로 단수 취급 → is."}
+];
+
+let mcq = JSON.parse(JSON.stringify(DEFAULT_MCQ));
+let saq = JSON.parse(JSON.stringify(DEFAULT_SAQ));
+
+const CIRCLES = "①②③④⑤⑥⑦⑧⑨⑩";
+function optLetters(){ return CIRCLES.split(""); }
+
+/* ================= 렌더링 ================= */
+function renderMCQ(){
+  const wrap = document.getElementById('mcq-columns');
+  if(mcq.length === 0){
+    wrap.style.display = 'none';
+    wrap.innerHTML = '';
+    return;
+  }
+  wrap.style.display = '';
+  let html = `<div class="section-title" style="columns:1">[객관식] (총 ${mcq.length}문항)</div>`;
+  mcq.forEach(q=>{
+    html += `<div class="q">
+      <div class="q-head"><div class="q-num">${q.n}</div><div class="q-text">${q.text}</div></div>`;
+    if(q.prompt) html += `<div class="q-prompt">${q.prompt}</div>`;
+    if(q.opts && q.opts.length){
+      html += '<div class="options">';
+      q.opts.forEach((o,i)=>{
+        html += `<div><span class="opt-mark">${optLetters()[i]||''}</span><span>${o}</span></div>`;
+      });
+      html += '</div>';
+    }
+    html += `<div class="ans-block"><div class="answer-line">정답: ${fmtAnswer(q.answer)}</div><div>${q.exp}</div></div>`;
+    html += `</div>`;
+  });
+  wrap.innerHTML = html;
+}
+
+/* 정답 끝의 "(인정: …)" 또는 "(②, ③, ⑤)"를 작은 회색 글씨로 분리 */
+function fmtAnswer(a){
+  const m = String(a).match(/^([\s\S]*?)\s*(\((?:인정\s*[:：][^)]*|[①②③④⑤⑥⑦⑧⑨⑩,\s]+)\))\s*$/);
+  if(!m) return a;
+  return `${m[1]} <span class="accept">${m[2]}</span>`;
+}
+/* 주관식 답안 줄 수: 모범답안(인정 제외)이 길면 2줄 */
+function blankLineCount(q){
+  const core = stripTags(q.answer).replace(/\s*\((?:인정|[①②③④⑤⑥⑦⑧⑨⑩]).*$/, "");
+  return core.length > 60 ? 2 : 1;
+}
+
+function renderSAQ(){
+  const titleEl = document.getElementById('saq-title');
+  const wrap = document.getElementById('short-answer');
+  if(saq.length === 0){
+    titleEl.style.display = 'none';
+    wrap.style.display = 'none';
+    wrap.innerHTML = '';
+    return;
+  }
+  titleEl.style.display = '';
+  wrap.style.display = '';
+  titleEl.textContent = `[주관식] (총 ${saq.length}문항)`;
+  let html = '';
+  saq.forEach(q=>{
+    html += `<div class="q" style="margin-bottom:36px;">
+      <div class="q-head"><div class="q-num">${q.n}</div><div class="q-text">${q.text}</div></div>`;
+    if(q.prompt) html += `<div class="q-prompt">${q.prompt}</div>`;
+    for(let k=0;k<blankLineCount(q);k++) html += `<div class="blank-line"></div>`;
+    html += `<div class="ans-block"><div class="answer-line">정답: ${fmtAnswer(q.answer)}</div><div>${q.exp}</div></div>`;
+    html += `</div>`;
+  });
+  wrap.innerHTML = html;
+}
+
+function renderAnswerKey(){
+  const wrap = document.getElementById('answer-key');
+  let html = '';
+  if(mcq.length){
+    html += `<div class="section-title" style="columns:1">[객관식] 정답 &amp; 해설</div>`;
+    mcq.forEach(q=>{
+      html += `<div class="ak-item">
+        <div class="ak-head"><div class="ak-num">${q.n}</div><span class="ak-answer">${fmtAnswer(q.answer)}</span></div>
+        <div class="ak-exp">${q.exp}</div>
+      </div>`;
+    });
+  }
+  if(saq.length){
+    html += `<div class="section-title" style="columns:1; margin-top:26px;">[주관식] 정답 &amp; 해설</div>`;
+    saq.forEach(q=>{
+      html += `<div class="ak-item">
+        <div class="ak-head"><div class="ak-num">${q.n}</div><span class="ak-answer">${fmtAnswer(q.answer)}</span></div>
+        <div class="ak-exp">${q.exp}</div>
+      </div>`;
+    });
+  }
+  wrap.innerHTML = html;
+}
+
+function renderAll(){ renderMCQ(); renderSAQ(); renderAnswerKey(); }
+renderAll();
+
+document.getElementById('answerToggle').addEventListener('change', function(){
+  document.body.classList.toggle('show-answers', this.checked);
+});
+document.getElementById('answerSheetToggle').addEventListener('change', function(){
+  document.body.classList.toggle('show-answer-sheet', this.checked);
+});
+
+/* ================= 시험지 저장 / 불러오기 (JSON 파일) ================= */
+function saveWorksheet(){
+  const data = {
+    version: 1,
+    savedAt: new Date().toISOString(),
+    testTitle: document.getElementById('testTitleMain').innerText.trim(),
+    testSubtitle: document.getElementById('testTitleSub').innerText.trim(),
+    answerTitle: document.getElementById('ansTitleMain').innerText.trim(),
+    answerSubtitle: document.getElementById('ansTitleSub').innerText.trim(),
+    theme,
+    fonts: fontSel,
+    mcq, saq
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const safeName = (data.testTitle || "worksheet")
+    .replace(/[\\/:*?"<>|]+/g, "")
+    .trim().replace(/\s+/g, "_") || "worksheet";
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${safeName}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById('loadFileInput').addEventListener('change', function(evt){
+  const file = evt.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const data = JSON.parse(e.target.result);
+      if(!Array.isArray(data.mcq) && !Array.isArray(data.saq)) throw new Error("형식 오류");
+      mcq = data.mcq || [];
+      saq = data.saq || [];
+      if(data.testTitle) document.getElementById('testTitleMain').innerText = data.testTitle;
+      if(data.testSubtitle) document.getElementById('testTitleSub').innerText = data.testSubtitle;
+      if(data.answerTitle) document.getElementById('ansTitleMain').innerText = data.answerTitle;
+      if(data.answerSubtitle) document.getElementById('ansTitleSub').innerText = data.answerSubtitle;
+      if(data.theme) applyTheme(data.theme);
+      if(data.fonts) applyFonts(data.fonts);
+      renderAll();
+      alert("저장된 시험지를 불러왔어요.");
+    }catch(err){
+      alert("파일을 읽지 못했어요. 이 대시보드에서 저장한 JSON 파일이 맞는지 확인해주세요.");
+    }
+    evt.target.value = "";
+  };
+  reader.readAsText(file);
+});
+
+/* ================= 색상(배경색) 테마 ================= */
+const THEME_KEY = "worksheetTheme_v1";
+const THEME_DEFAULT = {c1:"#fde6ef", c2:"#f7a8c4", badge:"#7c6fe0", page:"#f2f3f5"};
+const THEME_PRESETS = [
+  {name:"핑크 (기본)", c1:"#fde6ef", c2:"#f7a8c4", badge:"#7c6fe0", page:"#f2f3f5"},
+  {name:"민트",       c1:"#dff6ec", c2:"#8fd8b5", badge:"#2f8f6e", page:"#f1f6f3"},
+  {name:"하늘",       c1:"#e2f0ff", c2:"#9cc8f5", badge:"#3f7fd0", page:"#f1f5fa"},
+  {name:"라벤더",     c1:"#ece8ff", c2:"#b9aef2", badge:"#7c6fe0", page:"#f4f2fb"},
+  {name:"레몬",       c1:"#fff6d6", c2:"#ffd86b", badge:"#d28a00", page:"#faf7ec"},
+  {name:"코랄",       c1:"#ffe7df", c2:"#ffab94", badge:"#e0603f", page:"#faf3f0"},
+  {name:"그레이",     c1:"#f1f2f4", c2:"#c9cdd4", badge:"#4a5160", page:"#f2f3f5"},
+  {name:"화이트",     c1:"#ffffff", c2:"#ffffff", badge:"#4a5160", page:"#f2f3f5"}
+];
+let theme = Object.assign({}, THEME_DEFAULT);
+
+function hexToRgb(h){ h=h.replace("#",""); return [0,2,4].map(i=>parseInt(h.substr(i,2),16)); }
+function rgbToHex(a){ return "#"+a.map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,"0")).join(""); }
+/* 배너 색 2를 어둡게 만들어 부제 글자색으로 사용 (밝은 배너에서도 읽히도록) */
+function subtextFrom(hex){
+  const rgb = hexToRgb(hex);
+  const lum = (0.299*rgb[0]+0.587*rgb[1]+0.114*rgb[2]);
+  const f = lum > 200 ? 0.35 : 0.42;
+  return rgbToHex(rgb.map(v=>v*f));
+}
+function applyTheme(t, opts){
+  opts = opts || {};
+  theme = Object.assign({}, THEME_DEFAULT, t || {});
+  const r = document.documentElement.style;
+  r.setProperty("--green1", theme.c1);
+  r.setProperty("--green2", theme.c2);
+  r.setProperty("--badge", theme.badge);
+  r.setProperty("--purple", theme.badge);
+  r.setProperty("--pagebg", theme.page);
+  r.setProperty("--subtext", subtextFrom(theme.c2));
+  document.getElementById("colBanner1").value = theme.c1;
+  document.getElementById("colBanner2").value = theme.c2;
+  document.getElementById("colBadge").value = theme.badge;
+  document.getElementById("colPage").value = theme.page;
+  document.querySelectorAll("#swatchList .swatch").forEach((el,i)=>{
+    const p = THEME_PRESETS[i];
+    el.classList.toggle("active", p.c1===theme.c1 && p.c2===theme.c2 && p.badge===theme.badge && p.page===theme.page);
+  });
+  if(!opts.skipSave){ try{ localStorage.setItem(THEME_KEY, JSON.stringify(theme)); }catch(e){} }
+}
+function resetTheme(){ applyTheme(THEME_DEFAULT); }
+function buildSwatches(){
+  const wrap = document.getElementById("swatchList");
+  wrap.innerHTML = THEME_PRESETS.map((p,i)=>
+    `<div class="swatch" data-i="${i}"><span class="chip" style="background:linear-gradient(120deg,${p.c1},${p.c2})"></span>${p.name}</div>`
+  ).join("");
+  wrap.querySelectorAll(".swatch").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const p = THEME_PRESETS[parseInt(el.dataset.i,10)];
+      applyTheme({c1:p.c1, c2:p.c2, badge:p.badge, page:p.page});
+    });
+  });
+  [["colBanner1","c1"],["colBanner2","c2"],["colBadge","badge"],["colPage","page"]].forEach(([id,key])=>{
+    document.getElementById(id).addEventListener("input", function(){
+      const t = Object.assign({}, theme); t[key] = this.value; applyTheme(t);
+    });
+  });
+}
+buildSwatches();
+(function loadSavedTheme(){
+  let saved = null;
+  try{ saved = JSON.parse(localStorage.getItem(THEME_KEY) || "null"); }catch(e){}
+  applyTheme(saved || THEME_DEFAULT, {skipSave:true});
+})();
+
+/* ================= 글씨체 선택 ================= */
+const FONT_KEY = "worksheetFont_v1";
+const FONT_DEFAULT = {display:"Jua", body:"Gowun Dodum"};
+const FONT_DISPLAY_OPTS = [
+  {id:"Jua",            name:"주아 (기본)",      g:"Jua"},
+  {id:"Do Hyeon",       name:"도현",            g:"Do+Hyeon"},
+  {id:"Black Han Sans", name:"블랙 한 산스(굵게)", g:"Black+Han+Sans"},
+  {id:"Gamja Flower",   name:"감자꽃(손글씨)",    g:"Gamja+Flower"},
+  {id:"Gaegu",          name:"개구(손글씨)",      g:"Gaegu:wght@400;700"},
+  {id:"Noto Sans KR",   name:"노토 산스(고딕)",   g:"Noto+Sans+KR:wght@400;700"},
+  {id:"Gowun Batang",   name:"고운바탕(바탕체)",  g:"Gowun+Batang:wght@400;700"},
+  {id:"Malgun Gothic",  name:"맑은 고딕(기본 설치)", g:null}
+];
+const FONT_BODY_OPTS = [
+  {id:"Gowun Dodum",    name:"고운돋움 (기본)",   g:"Gowun+Dodum"},
+  {id:"Noto Sans KR",   name:"노토 산스(고딕)",   g:"Noto+Sans+KR:wght@400;700"},
+  {id:"Nanum Gothic",   name:"나눔고딕",         g:"Nanum+Gothic:wght@400;700"},
+  {id:"IBM Plex Sans KR", name:"IBM 플렉스 산스", g:"IBM+Plex+Sans+KR:wght@400;700"},
+  {id:"Gowun Batang",   name:"고운바탕(바탕체)",  g:"Gowun+Batang:wght@400;700"},
+  {id:"Noto Serif KR",  name:"노토 세리프(명조)", g:"Noto+Serif+KR:wght@400;700"},
+  {id:"Nanum Myeongjo", name:"나눔명조",         g:"Nanum+Myeongjo:wght@400;700"},
+  {id:"Malgun Gothic",  name:"맑은 고딕(기본 설치)", g:null}
+];
+let fontSel = Object.assign({}, FONT_DEFAULT);
+function loadGoogleFont(g){
+  if(!g) return;
+  const id = "gf_" + g.replace(/[^a-z0-9]/gi,"_");
+  if(document.getElementById(id)) return;
+  const l = document.createElement("link");
+  l.id = id; l.rel = "stylesheet";
+  l.href = "https://fonts.googleapis.com/css2?family=" + g + "&display=swap";
+  document.head.appendChild(l);
+}
+function fontStack(name){ return `'${name}','Apple SD Gothic Neo','Malgun Gothic',sans-serif`; }
+function applyFonts(f, opts){
+  opts = opts || {};
+  fontSel = Object.assign({}, FONT_DEFAULT, f || {});
+  const d = FONT_DISPLAY_OPTS.find(o=>o.id===fontSel.display) || FONT_DISPLAY_OPTS[0];
+  const b = FONT_BODY_OPTS.find(o=>o.id===fontSel.body) || FONT_BODY_OPTS[0];
+  fontSel = {display:d.id, body:b.id};
+  loadGoogleFont(d.g); loadGoogleFont(b.g);
+  const r = document.documentElement.style;
+  r.setProperty("--font-display", fontStack(d.id));
+  r.setProperty("--font-body", fontStack(b.id));
+  const ds = document.getElementById("fontDisplaySel"), bs = document.getElementById("fontBodySel");
+  if(ds) ds.value = d.id; if(bs) bs.value = b.id;
+  if(!opts.skipSave){ try{ localStorage.setItem(FONT_KEY, JSON.stringify(fontSel)); }catch(e){} }
+}
+function resetFonts(){ applyFonts(FONT_DEFAULT); }
+(function initFonts(){
+  const ds = document.getElementById("fontDisplaySel"), bs = document.getElementById("fontBodySel");
+  ds.innerHTML = FONT_DISPLAY_OPTS.map(o=>`<option value="${o.id}">${o.name}</option>`).join("");
+  bs.innerHTML = FONT_BODY_OPTS.map(o=>`<option value="${o.id}">${o.name}</option>`).join("");
+  ds.addEventListener("change", ()=>applyFonts({display:ds.value, body:fontSel.body}));
+  bs.addEventListener("change", ()=>applyFonts({display:fontSel.display, body:bs.value}));
+  let saved = null;
+  try{ saved = JSON.parse(localStorage.getItem(FONT_KEY) || "null"); }catch(e){}
+  applyFonts(saved || FONT_DEFAULT, {skipSave:true});
+})();
+
+/* ================= 패널 토글 ================= */
+function togglePanel(id){
+  document.getElementById(id).classList.toggle('open');
+}
+function openCheckPanel(){
+  const panel = document.getElementById('checkPanel');
+  panel.classList.add('open');
+  renderCheckResults();
+  panel.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+/* ================= ChatGPT 텍스트 붙여넣기 → 자동 변환 ================= */
+function convertPastedText(){
+  const raw = document.getElementById('pasteBox').value;
+  const statusEl = document.getElementById('pasteStatus');
+  if(!raw.trim()){
+    statusEl.textContent = "붙여넣은 텍스트가 없어요.";
+    statusEl.className = "status-msg err";
+    return;
+  }
+  const parsed = parsePastedText(raw);
+  if(parsed.mcq.length===0 && parsed.saq.length===0){
+    statusEl.textContent = "문항을 인식하지 못했어요. 형식을 확인해주세요 (예: '1. 문제...', '① 보기', '정답: ...').";
+    statusEl.className = "status-msg err";
+    return;
+  }
+  mcq = parsed.mcq;
+  saq = parsed.saq;
+  if(parsed.titleMain) applyTitles(parsed.titleMain, parsed.titleSub);
+  renderAll();
+  const titleNote = parsed.titleMain ? ` 제목: "${parsed.titleMain}"${parsed.titleSub ? ' / 부제: "'+parsed.titleSub+'"' : ''}.` : " (제목은 인식하지 못해 기존 제목을 유지했어요.)";
+  statusEl.textContent = `✅ 객관식 ${parsed.mcq.length}문항, 주관식 ${parsed.saq.length}문항을 인식해서 시험지에 반영했어요.` + titleNote;
+  statusEl.className = "status-msg ok";
+}
+
+function applyTitles(main, sub){
+  document.getElementById('testTitleMain').innerText = main;
+  document.getElementById('testTitleSub').innerText = sub || "";
+  document.getElementById('ansTitleMain').innerText = main + " — 해설지";
+  document.getElementById('ansTitleSub').innerText = (sub ? sub + " · " : "") + "Answer Key";
+  document.getElementById('footerTest').innerText = main;
+  document.getElementById('footerAns').innerText = main + " · 해설지";
+  document.title = main;
+  if(typeof _dirty!=='undefined'){ _dirty.footerTest=_dirty.footerAns=_dirty.ansTitleMain=false; }
+}
+
+// 제목을 직접 고치면 해설지 제목·바닥글도 따라가게 (바닥글을 직접 고친 경우는 그대로 둠)
+const _dirty = {footerTest:false, footerAns:false, ansTitleMain:false};
+['footerTest','footerAns','ansTitleMain'].forEach(id=>{
+  const el = document.getElementById(id);
+  if(el) el.addEventListener('input', ()=>{ _dirty[id] = true; });
+});
+const _tt = document.getElementById('testTitleMain');
+if(_tt) _tt.addEventListener('input', ()=>{
+  const main = _tt.innerText.trim();
+  if(!_dirty.footerTest) document.getElementById('footerTest').innerText = main;
+  if(!_dirty.ansTitleMain) document.getElementById('ansTitleMain').innerText = main + " — 해설지";
+  if(!_dirty.footerAns) document.getElementById('footerAns').innerText = main + " · 해설지";
+});
+
+function loadDefault(){
+  mcq = JSON.parse(JSON.stringify(DEFAULT_MCQ));
+  saq = JSON.parse(JSON.stringify(DEFAULT_SAQ));
+  renderAll();
+  document.getElementById('pasteStatus').textContent = "기본 예시 문제로 되돌렸어요.";
+  document.getElementById('pasteStatus').className = "status-msg";
+}
+
+function mergeArrows(lines){
+  const out=[];
+  for(const l of lines){
+    const prev=out[out.length-1];
+    if(/^→/.test(l) && prev && /^→/.test(prev) && (prev.length + l.length) < 80) out[out.length-1] = prev + "　　" + l;
+    else out.push(l);
+  }
+  return out;
+}
+function parsePastedText(raw){
+  const lines = raw.split(/\r?\n/).map(l=>l.trim());
+  const starts = [];
+  lines.forEach((l,i)=>{
+    const m = l.match(/^(\d{1,3})\.\s*(.*)$/);
+    if(m) starts.push({idx:i, num:parseInt(m[1],10), rest:m[2]});
+  });
+  /* --- 맨 위 제목/부제 인식 --- */
+  let titleMain = "", titleSub = "";
+  const firstIdx = starts.length ? starts[0].idx : lines.length;
+  const preLines = lines.slice(0, firstIdx).filter(l=>l!=="");
+  const partRe = /^(part|파트)\s*\d+/i;
+  const free = [];
+  preLines.forEach(l=>{
+    let m;
+    if((m = l.match(/^(제목|타이틀|title)\s*[:：]\s*(.+)$/i))){ titleMain = m[2].trim(); return; }
+    if((m = l.match(/^(부제|소제목|subtitle)\s*[:：]\s*(.+)$/i))){ titleSub = m[2].trim(); return; }
+    if(partRe.test(l)) return;           // Part 1. ... 같은 구역 제목은 제외
+    if(l.length > 60) return;            // 긴 문장(채팅 안내문 등)은 제목으로 보지 않음
+    free.push(l);
+  });
+  if(!titleMain && free.length) titleMain = free[0];
+  if(!titleSub && free.length > 1) titleSub = free[1];
+
+  const blocks = starts.map((s,i)=>({
+    num:s.num,
+    headerRest:s.rest,
+    lines: lines.slice(s.idx+1, i+1<starts.length? starts[i+1].idx : lines.length)
+  }));
+
+  const circleRe = /^([①②③④⑤⑥⑦⑧⑨⑩])\s*(.*)$/;
+  const mcqOut = [], saqOut = [];
+
+  blocks.forEach(b=>{
+    const promptLines = [];
+    const opts = [];
+    const expLines = [];
+    let answer = "";
+    let mode = "prompt";
+
+    for(const rawLine of b.lines){
+      const line = rawLine;
+      if(line === ""){ continue; }
+      if(partRe.test(line)) continue;    // 문제 사이에 낀 'Part N.' 제목 줄은 해설에 섞이지 않게 제외
+      const cm = line.match(circleRe);
+      const am = line.match(/^정답\s*[:：]\s*(.*)$/);
+      const isExpHeader = /^해설\s*$/.test(line);
+
+      if(am){ answer = am[1].trim(); mode = "exp"; continue; }
+      if(isExpHeader){ mode = "exp"; continue; }
+
+      if(mode === "exp"){
+        expLines.push(line.replace(/^[\*\-•]\s*/, ""));
+        continue;
+      }
+      if(cm){
+        mode = "options";
+        opts.push(cm[2].trim());
+        continue;
+      }
+      if(mode === "options"){
+        // 옵션 줄바꿈 이어지는 경우
+        if(opts.length) opts[opts.length-1] += " " + line;
+        continue;
+      }
+      promptLines.push(line);
+    }
+
+    const cleanText = (b.headerRest || "").replace(/\{([^}]+)\}/g, "<u>$1</u>");
+    const entry = {
+      n: b.num,
+      text: cleanText,
+      prompt: promptLines.join("<br>").replace(/\{([^}]+)\}/g, "<u>$1</u>"),
+      opts: opts.length ? opts.map(o => o.replace(/\{([^}]+)\}/g, "<u>$1</u>")) : null,
+      answer: (answer || "(정답 미기재)").replace(/\{([^}]+)\}/g, "<u>$1</u>"),
+      exp: (mergeArrows(expLines).join("<br>") || "(해설 미기재)").replace(/\{([^}]+)\}/g, "<u>$1</u>")
+    };
+    if(opts.length >= 2) mcqOut.push(entry); else saqOut.push(entry);
+  });
+
+  return {mcq:mcqOut, saq:saqOut, titleMain, titleSub};
+}
+
+/* ================= 문항 검수 : 오답/해설오류/형식 체크 ================= */
+function stripTags(html){ return (html||"").replace(/<[^>]*>/g, ""); }
+function tokenize(s){ return stripTags(s).toLowerCase().match(/[a-z0-9]+|[가-힣]+/g) || []; }
+function hasOverlap(a, b, minLen){
+  const ta = new Set(tokenize(a).filter(t=>t.length>=minLen));
+  return tokenize(b).filter(t=>t.length>=minLen).some(t=>ta.has(t));
+}
+
+function validateWorksheet(){
+  const issues = [];
+  const allNums = [...mcq.map(q=>q.n), ...saq.map(q=>q.n)].sort((a,b)=>a-b);
+
+  if(allNums.length===0){
+    issues.push({level:"error", msg:"인식된 문항이 없습니다. 붙여넣은 텍스트 형식을 확인하세요."});
+  }
+  for(let i=1;i<allNums.length;i++){
+    if(allNums[i]===allNums[i-1]) issues.push({level:"error", msg:`문항 번호 ${allNums[i]}번이 중복되었습니다.`});
+  }
+  for(let i=0;i<allNums.length-1;i++){
+    if(allNums[i+1]-allNums[i] > 1) issues.push({level:"info", msg:`${allNums[i]}번과 ${allNums[i+1]}번 사이 번호가 비어 있습니다.`});
+  }
+
+  mcq.forEach(q=>{
+    if(!q.opts || q.opts.length < 2){
+      issues.push({level:"error", msg:`${q.n}번: 보기가 부족합니다 (${q.opts ? q.opts.length : 0}개).`});
+    } else if(q.opts.length !== 5){
+      issues.push({level:"warn", msg:`${q.n}번: 보기 개수가 ${q.opts.length}개입니다 (표준 5개 권장).`});
+    }
+    // 보기 중복 체크
+    if(q.opts){
+      const seen = new Set();
+      q.opts.forEach(o=>{
+        const key = tokenize(o).join(" ");
+        if(key && seen.has(key)) issues.push({level:"warn", msg:`${q.n}번: 보기 중 내용이 서로 중복되는 항목이 있습니다.`});
+        seen.add(key);
+      });
+    }
+
+    const cm = q.answer.match(/^([①②③④⑤⑥⑦⑧⑨⑩])/);
+    if(cm){
+      const idx = CIRCLES.indexOf(cm[1]);
+      if(q.opts && idx >= q.opts.length){
+        issues.push({level:"error", msg:`${q.n}번: 정답 번호(${cm[1]})가 보기 개수(${q.opts.length}개) 범위를 벗어납니다.`});
+      } else if(q.opts){
+        const correctOpt = q.opts[idx];
+        // 오답 체크: 정답으로 표시된 보기 문구와 '정답' 필드에 적힌 문구가 실제로 일치하는지
+        if(!hasOverlap(q.answer, correctOpt, 2)){
+          issues.push({level:"error", msg:`${q.n}번: 정답으로 표시된 ${cm[1]}번 보기("${correctOpt}")와 정답 문구가 서로 달라 보입니다 — 오답 표기가 아닌지 확인해주세요.`});
+        }
+        // 해설오류 체크: 해설 내용이 실제 정답 보기와 관련이 있는지
+        if(!q.exp.includes("미기재") && !hasOverlap(q.exp, correctOpt, 2) && !hasOverlap(q.exp, cm[1], 1)){
+          issues.push({level:"warn", msg:`${q.n}번: 해설 내용에서 정답(${cm[1]} ${correctOpt}) 관련 근거를 찾기 어렵습니다 — 해설이 다른 문항 것과 뒤섞였는지 확인해주세요.`});
+        }
+      }
+    } else {
+      issues.push({level:"warn", msg:`${q.n}번: 정답에 보기 번호(①~⑤)가 명시되어 있지 않습니다.`});
+    }
+    if(q.exp.includes("미기재")) issues.push({level:"warn", msg:`${q.n}번: 해설이 비어 있습니다.`});
+  });
+
+  saq.forEach(q=>{
+    if(q.answer.includes("미기재")) issues.push({level:"error", msg:`${q.n}번: 정답이 비어 있습니다.`});
+    if(q.exp.includes("미기재")) issues.push({level:"warn", msg:`${q.n}번: 해설이 비어 있습니다.`});
+    if(!q.prompt) issues.push({level:"info", msg:`${q.n}번: 지문(prompt)이 비어 있습니다.`});
+    // 해설오류 체크: 해설이 정답 문구를 전혀 언급하지 않으면 다른 문항 해설이 섞였을 가능성
+    if(!q.answer.includes("미기재") && !q.exp.includes("미기재") && !hasOverlap(q.exp, q.answer, 2)){
+      issues.push({level:"warn", msg:`${q.n}번: 해설이 정답("${q.answer}")과 관련 없어 보입니다 — 해설 오류 여부를 확인해주세요.`});
+    }
+  });
+
+  return issues;
+}
+
+function renderCheckResults(){
+  const issues = validateWorksheet();
+  const wrap = document.getElementById('checkResults');
+  if(issues.length===0){
+    wrap.innerHTML = `<div class="issue-ok">✅ 모든 문항이 형식에 맞게 잘 구성되어 있어요!</div>`;
+    return;
+  }
+  const icon = {error:"❌", warn:"⚠️", info:"ℹ️"};
+  const order = {error:0, warn:1, info:2};
+  issues.sort((a,b)=>order[a.level]-order[b.level]);
+  wrap.innerHTML = issues.map(it=>
+    `<div class="issue level-${it.level}"><span class="ic">${icon[it.level]}</span><span>${it.msg}</span></div>`
+  ).join("");
+}
+
+/* ================= 인쇄 ================= */
+function printMode(mode){
+  document.body.classList.remove('print-test-only','print-answers-only');
+  document.body.classList.add(mode);
+  window.print();
+}
+window.addEventListener('afterprint', function(){
+  document.body.classList.remove('print-test-only','print-answers-only');
+});
+</script>
+</body>
+</html>
