@@ -112,6 +112,8 @@
     width:38px; height:30px; padding:0; border:1px solid var(--line); border-radius:8px; background:#fff; cursor:pointer;
   }
 
+  .color-row select{ padding:6px 8px; border:1px solid var(--line); border-radius:8px; background:#fff; font-size:13.5px; font-family:inherit; color:var(--ink); }
+
   /* ---------- page ---------- */
   .page-wrap{
     max-width:900px;
@@ -299,6 +301,7 @@
     body.print-answers-only .answer-sheet-page{ display:block !important; }
 
   }
+@media screen{ .page-footer[contenteditable]:hover{ outline:1px dashed #b9a8ee; outline-offset:2px; cursor:text; } }
 </style>
 </head>
 <body>
@@ -311,6 +314,7 @@
   <button class="btn ghost" onclick="togglePanel('pastePanel')">📋 ChatGPT 글 붙여넣기</button>
   <button class="btn tool" onclick="openCheckPanel()">🔍 문항 유효성 검수</button>
   <button class="btn ghost" onclick="togglePanel('colorPanel')">🎨 배경색 바꾸기</button>
+  <button class="btn ghost" onclick="togglePanel('fontPanel')">🔤 글씨체 바꾸기</button>
   <div class="divider"></div>
   <button class="btn ghost" onclick="saveWorksheet()">💾 시험지 저장</button>
   <button class="btn ghost" onclick="document.getElementById('loadFileInput').click()">📂 불러오기</button>
@@ -370,6 +374,27 @@
   </div>
 </div>
 
+<!-- ============ 글씨체 패널 ============ -->
+<div class="panel" id="fontPanel">
+  <div class="panel-card">
+    <h2>🔤 글씨체 바꾸기</h2>
+    <p style="font-size:12.5px; color:var(--sub); margin:0 0 10px; line-height:1.6;">
+      <b>제목·강조 글씨체</b>는 제목, 문제 번호, 정답 표시에, <b>본문 글씨체</b>는 문제·보기·해설에 적용돼요.
+      고른 글씨체는 인쇄(PDF)에도 그대로 반영되고, 이 브라우저에 자동 저장되며 💾 시험지 저장 파일에도 같이 들어가요.
+      (글씨체는 인터넷에 연결되어 있을 때 불러와요.)
+    </p>
+    <div class="color-row">
+      <label>제목·강조 <select id="fontDisplaySel"></select></label>
+      <label>본문 <select id="fontBodySel"></select></label>
+      <button class="btn ghost" onclick="resetFonts()">↩️ 기본 글씨체로</button>
+    </div>
+    <div id="fontPreview" style="margin-top:12px; padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:#fff;">
+      <div id="fpTitle" style="font-family:var(--font-display); font-size:18px; margin-bottom:6px;">1. 다음 빈칸에 들어갈 알맞은 말을 고르시오.</div>
+      <div id="fpBody" style="font-family:var(--font-body); font-size:14px; line-height:1.7;">Our school festival is in October. ① at ② on ③ in — 월 앞에는 시간 전치사 in을 사용합니다. 0123456789</div>
+    </div>
+  </div>
+</div>
+
 <div class="page-wrap">
 
   <div class="test-pages">
@@ -393,7 +418,7 @@
         <div class="section-title" id="saq-title">[주관식]</div>
         <div id="short-answer"></div>
       </div>
-      <footer class="page-footer" id="footerTest">G-MAP Basic A-1 · Review Test</footer>
+      <footer class="page-footer" id="footerTest" contenteditable="true" spellcheck="false">G-MAP Basic A-1 Review Test</footer>
     </div>
   </div>
 
@@ -402,14 +427,14 @@
     <div class="banner">
       <div class="logo">LILY T</div>
       <div class="title-block">
-        <div class="main" id="ansTitleMain" contenteditable="true" spellcheck="false">G-MAP Basic A-1 Review Test — 해설지</div>
-        <div class="sub" id="ansTitleSub" contenteditable="true" spellcheck="false">Unit 18~19 종합 · 부정대명사 (Indefinite Pronouns) · Answer Key</div>
+        <div class="main" id="ansTitleMain" contenteditable="true" spellcheck="false">G-MAP Basic A-1 Review Test</div>
+        <div class="sub" id="ansTitleSub" contenteditable="true" spellcheck="false">Unit 18~19 종합 · 부정대명사 (Indefinite Pronouns)</div>
       </div>
     </div>
     <div class="body-pad">
       <div id="answer-key"></div>
     </div>
-    <footer class="page-footer" id="footerAns">G-MAP Basic A-1 · Answer Key</footer>
+    <footer class="page-footer" id="footerAns" contenteditable="true" spellcheck="false">G-MAP Basic A-1 Review Test · 해설지</footer>
   </div>
 
 </div>
@@ -609,6 +634,7 @@ function saveWorksheet(){
     answerTitle: document.getElementById('ansTitleMain').innerText.trim(),
     answerSubtitle: document.getElementById('ansTitleSub').innerText.trim(),
     theme,
+    fonts: fontSel,
     mcq, saq
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
@@ -640,6 +666,7 @@ document.getElementById('loadFileInput').addEventListener('change', function(evt
       if(data.answerTitle) document.getElementById('ansTitleMain').innerText = data.answerTitle;
       if(data.answerSubtitle) document.getElementById('ansTitleSub').innerText = data.answerSubtitle;
       if(data.theme) applyTheme(data.theme);
+      if(data.fonts) applyFonts(data.fonts);
       renderAll();
       alert("저장된 시험지를 불러왔어요.");
     }catch(err){
@@ -719,6 +746,66 @@ buildSwatches();
   applyTheme(saved || THEME_DEFAULT, {skipSave:true});
 })();
 
+/* ================= 글씨체 선택 ================= */
+const FONT_KEY = "worksheetFont_v1";
+const FONT_DEFAULT = {display:"Jua", body:"Gowun Dodum"};
+const FONT_DISPLAY_OPTS = [
+  {id:"Jua",            name:"주아 (기본)",      g:"Jua"},
+  {id:"Do Hyeon",       name:"도현",            g:"Do+Hyeon"},
+  {id:"Black Han Sans", name:"블랙 한 산스(굵게)", g:"Black+Han+Sans"},
+  {id:"Gamja Flower",   name:"감자꽃(손글씨)",    g:"Gamja+Flower"},
+  {id:"Gaegu",          name:"개구(손글씨)",      g:"Gaegu:wght@400;700"},
+  {id:"Noto Sans KR",   name:"노토 산스(고딕)",   g:"Noto+Sans+KR:wght@400;700"},
+  {id:"Gowun Batang",   name:"고운바탕(바탕체)",  g:"Gowun+Batang:wght@400;700"},
+  {id:"Malgun Gothic",  name:"맑은 고딕(기본 설치)", g:null}
+];
+const FONT_BODY_OPTS = [
+  {id:"Gowun Dodum",    name:"고운돋움 (기본)",   g:"Gowun+Dodum"},
+  {id:"Noto Sans KR",   name:"노토 산스(고딕)",   g:"Noto+Sans+KR:wght@400;700"},
+  {id:"Nanum Gothic",   name:"나눔고딕",         g:"Nanum+Gothic:wght@400;700"},
+  {id:"IBM Plex Sans KR", name:"IBM 플렉스 산스", g:"IBM+Plex+Sans+KR:wght@400;700"},
+  {id:"Gowun Batang",   name:"고운바탕(바탕체)",  g:"Gowun+Batang:wght@400;700"},
+  {id:"Noto Serif KR",  name:"노토 세리프(명조)", g:"Noto+Serif+KR:wght@400;700"},
+  {id:"Nanum Myeongjo", name:"나눔명조",         g:"Nanum+Myeongjo:wght@400;700"},
+  {id:"Malgun Gothic",  name:"맑은 고딕(기본 설치)", g:null}
+];
+let fontSel = Object.assign({}, FONT_DEFAULT);
+function loadGoogleFont(g){
+  if(!g) return;
+  const id = "gf_" + g.replace(/[^a-z0-9]/gi,"_");
+  if(document.getElementById(id)) return;
+  const l = document.createElement("link");
+  l.id = id; l.rel = "stylesheet";
+  l.href = "https://fonts.googleapis.com/css2?family=" + g + "&display=swap";
+  document.head.appendChild(l);
+}
+function fontStack(name){ return `'${name}','Apple SD Gothic Neo','Malgun Gothic',sans-serif`; }
+function applyFonts(f, opts){
+  opts = opts || {};
+  fontSel = Object.assign({}, FONT_DEFAULT, f || {});
+  const d = FONT_DISPLAY_OPTS.find(o=>o.id===fontSel.display) || FONT_DISPLAY_OPTS[0];
+  const b = FONT_BODY_OPTS.find(o=>o.id===fontSel.body) || FONT_BODY_OPTS[0];
+  fontSel = {display:d.id, body:b.id};
+  loadGoogleFont(d.g); loadGoogleFont(b.g);
+  const r = document.documentElement.style;
+  r.setProperty("--font-display", fontStack(d.id));
+  r.setProperty("--font-body", fontStack(b.id));
+  const ds = document.getElementById("fontDisplaySel"), bs = document.getElementById("fontBodySel");
+  if(ds) ds.value = d.id; if(bs) bs.value = b.id;
+  if(!opts.skipSave){ try{ localStorage.setItem(FONT_KEY, JSON.stringify(fontSel)); }catch(e){} }
+}
+function resetFonts(){ applyFonts(FONT_DEFAULT); }
+(function initFonts(){
+  const ds = document.getElementById("fontDisplaySel"), bs = document.getElementById("fontBodySel");
+  ds.innerHTML = FONT_DISPLAY_OPTS.map(o=>`<option value="${o.id}">${o.name}</option>`).join("");
+  bs.innerHTML = FONT_BODY_OPTS.map(o=>`<option value="${o.id}">${o.name}</option>`).join("");
+  ds.addEventListener("change", ()=>applyFonts({display:ds.value, body:fontSel.body}));
+  bs.addEventListener("change", ()=>applyFonts({display:fontSel.display, body:bs.value}));
+  let saved = null;
+  try{ saved = JSON.parse(localStorage.getItem(FONT_KEY) || "null"); }catch(e){}
+  applyFonts(saved || FONT_DEFAULT, {skipSave:true});
+})();
+
 /* ================= 패널 토글 ================= */
 function togglePanel(id){
   document.getElementById(id).classList.toggle('open');
@@ -757,12 +844,31 @@ function convertPastedText(){
 function applyTitles(main, sub){
   document.getElementById('testTitleMain').innerText = main;
   document.getElementById('testTitleSub').innerText = sub || "";
-  document.getElementById('ansTitleMain').innerText = main + " — 해설지";
-  document.getElementById('ansTitleSub').innerText = (sub ? sub + " · " : "") + "Answer Key";
-  document.getElementById('footerTest').innerText = main + " · Review Test";
-  document.getElementById('footerAns').innerText = main + " · Answer Key";
+  document.getElementById('ansTitleMain').innerText = main;
+  document.getElementById('ansTitleSub').innerText = sub || "";
+  if(!_dirty.footerTest) document.getElementById('footerTest').innerText = main;
+  if(!_dirty.footerAns) document.getElementById('footerAns').innerText = main + " · 해설지";
   document.title = main;
 }
+
+// 시험지 제목/부제를 고치면 해설지 제목/부제도 항상 "그대로" 똑같이 따라가게 동기화.
+// (바닥글만 별도로 직접 고친 경우는 그 바닥글 값을 유지)
+const _dirty = {footerTest:false, footerAns:false};
+['footerTest','footerAns'].forEach(id=>{
+  const el = document.getElementById(id);
+  if(el) el.addEventListener('input', ()=>{ _dirty[id] = true; });
+});
+const _tt = document.getElementById('testTitleMain');
+if(_tt) _tt.addEventListener('input', ()=>{
+  const main = _tt.innerText.trim();
+  document.getElementById('ansTitleMain').innerText = main;
+  if(!_dirty.footerTest) document.getElementById('footerTest').innerText = main;
+  if(!_dirty.footerAns) document.getElementById('footerAns').innerText = main + " · 해설지";
+});
+const _ts = document.getElementById('testTitleSub');
+if(_ts) _ts.addEventListener('input', ()=>{
+  document.getElementById('ansTitleSub').innerText = _ts.innerText.trim();
+});
 
 function loadDefault(){
   mcq = JSON.parse(JSON.stringify(DEFAULT_MCQ));
@@ -802,8 +908,8 @@ function parsePastedText(raw){
     if(l.length > 60) return;            // 긴 문장(채팅 안내문 등)은 제목으로 보지 않음
     free.push(l);
   });
-  if(!titleMain && free.length) titleMain = free[0];
-  if(!titleSub && free.length > 1) titleSub = free[1];
+  // 명시적으로 "제목:" / "부제:" 라벨이 없으면 제목을 추측하지 않음.
+  // (안내문·메모 줄을 제목으로 잘못 인식해서 해설지 제목이 이상하게 나오는 문제 방지)
 
   const blocks = starts.map((s,i)=>({
     num:s.num,
@@ -909,12 +1015,15 @@ function validateWorksheet(){
         issues.push({level:"error", msg:`${q.n}번: 정답 번호(${cm[1]})가 보기 개수(${q.opts.length}개) 범위를 벗어납니다.`});
       } else if(q.opts){
         const correctOpt = q.opts[idx];
-        // 오답 체크: 정답으로 표시된 보기 문구와 '정답' 필드에 적힌 문구가 실제로 일치하는지
-        if(!hasOverlap(q.answer, correctOpt, 2)){
-          issues.push({level:"error", msg:`${q.n}번: 정답으로 표시된 ${cm[1]}번 보기("${correctOpt}")와 정답 문구가 서로 달라 보입니다 — 오답 표기가 아닌지 확인해주세요.`});
+        // 오답 체크: '정답' 필드에 보기 번호 외에 문구가 추가로 적혀 있는 경우에만,
+        // 그 문구가 실제 정답 보기 내용과 일치하는지 비교합니다.
+        // (정답이 "②"처럼 번호만 적힌 경우는 비교할 문구 자체가 없으므로 오탐을 막기 위해 건너뜁니다.)
+        const answerRest = q.answer.slice(cm[1].length).replace(/^[\s.):,-]+/, "").trim();
+        if(answerRest && !hasOverlap(answerRest, correctOpt, 2)){
+          issues.push({level:"error", msg:`${q.n}번: 정답으로 표시된 ${cm[1]}번 보기("${correctOpt}")와 정답 문구("${answerRest}")가 서로 달라 보입니다 — 오답 표기가 아닌지 확인해주세요.`});
         }
         // 해설오류 체크: 해설 내용이 실제 정답 보기와 관련이 있는지
-        if(!q.exp.includes("미기재") && !hasOverlap(q.exp, correctOpt, 2) && !hasOverlap(q.exp, cm[1], 1)){
+        if(!q.exp.includes("미기재") && !hasOverlap(q.exp, correctOpt, 2)){
           issues.push({level:"warn", msg:`${q.n}번: 해설 내용에서 정답(${cm[1]} ${correctOpt}) 관련 근거를 찾기 어렵습니다 — 해설이 다른 문항 것과 뒤섞였는지 확인해주세요.`});
         }
       }
