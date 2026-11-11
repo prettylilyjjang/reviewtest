@@ -300,6 +300,16 @@
     body.print-answers-only .test-pages{ display:none !important; }
     body.print-answers-only .answer-sheet-page{ display:block !important; }
 
+    /* 시험지+해설지 함께 인쇄: 둘 다 노출 (시험지 뒤에 해설지가 이어서 인쇄됨)
+       시험지 쪽 인라인 정답(ans-block)은 항상 숨겨서, 정답/해설은 뒤의 해설지에서만 보이게 함
+       (화면에서 "정답 미리보기"를 켜둔 채로 인쇄해도 시험지에는 정답이 찍히지 않음, 해설지와 중복 방지) */
+    body.print-both .answer-sheet-page{ display:block !important; }
+    body.print-both .ans-block{ display:none !important; }
+
+    /* 시험지(정답 포함) 인쇄: 해설지 페이지는 숨기고, 시험지에 정답+해설을 인라인으로 강제 노출 */
+    body.print-test-with-answers .answer-sheet-page{ display:none !important; }
+    body.print-test-with-answers .ans-block{ display:block !important; }
+
   }
 @media screen{ .page-footer[contenteditable]:hover{ outline:1px dashed #b9a8ee; outline-offset:2px; cursor:text; } }
 </style>
@@ -321,7 +331,9 @@
   <input type="file" id="loadFileInput" accept="application/json" style="display:none">
   <div class="divider"></div>
   <button class="btn primary" onclick="printMode('print-test-only')">🖨️ 시험지만 인쇄</button>
+  <button class="btn ghost" onclick="printMode('print-test-with-answers')">✅ 시험지(정답포함) 인쇄</button>
   <button class="btn answers" onclick="printMode('print-answers-only')">📘 해설지만 인쇄</button>
+  <button class="btn ghost" onclick="printMode('print-both')">📑 시험지+해설지 함께 인쇄</button>
 </div>
 
 <!-- ============ 붙여넣기 패널 ============ -->
@@ -1015,12 +1027,15 @@ function validateWorksheet(){
         issues.push({level:"error", msg:`${q.n}번: 정답 번호(${cm[1]})가 보기 개수(${q.opts.length}개) 범위를 벗어납니다.`});
       } else if(q.opts){
         const correctOpt = q.opts[idx];
-        // 오답 체크: 정답으로 표시된 보기 문구와 '정답' 필드에 적힌 문구가 실제로 일치하는지
-        if(!hasOverlap(q.answer, correctOpt, 2)){
-          issues.push({level:"error", msg:`${q.n}번: 정답으로 표시된 ${cm[1]}번 보기("${correctOpt}")와 정답 문구가 서로 달라 보입니다 — 오답 표기가 아닌지 확인해주세요.`});
+        // 오답 체크: '정답' 필드에 보기 번호 외에 문구가 추가로 적혀 있는 경우에만,
+        // 그 문구가 실제 정답 보기 내용과 일치하는지 비교합니다.
+        // (정답이 "②"처럼 번호만 적힌 경우는 비교할 문구 자체가 없으므로 오탐을 막기 위해 건너뜁니다.)
+        const answerRest = q.answer.slice(cm[1].length).replace(/^[\s.):,-]+/, "").trim();
+        if(answerRest && !hasOverlap(answerRest, correctOpt, 2)){
+          issues.push({level:"error", msg:`${q.n}번: 정답으로 표시된 ${cm[1]}번 보기("${correctOpt}")와 정답 문구("${answerRest}")가 서로 달라 보입니다 — 오답 표기가 아닌지 확인해주세요.`});
         }
         // 해설오류 체크: 해설 내용이 실제 정답 보기와 관련이 있는지
-        if(!q.exp.includes("미기재") && !hasOverlap(q.exp, correctOpt, 2) && !hasOverlap(q.exp, cm[1], 1)){
+        if(!q.exp.includes("미기재") && !hasOverlap(q.exp, correctOpt, 2)){
           issues.push({level:"warn", msg:`${q.n}번: 해설 내용에서 정답(${cm[1]} ${correctOpt}) 관련 근거를 찾기 어렵습니다 — 해설이 다른 문항 것과 뒤섞였는지 확인해주세요.`});
         }
       }
@@ -1059,13 +1074,14 @@ function renderCheckResults(){
 }
 
 /* ================= 인쇄 ================= */
+const PRINT_MODES = ['print-test-only','print-answers-only','print-both','print-test-with-answers'];
 function printMode(mode){
-  document.body.classList.remove('print-test-only','print-answers-only');
+  document.body.classList.remove(...PRINT_MODES);
   document.body.classList.add(mode);
   window.print();
 }
 window.addEventListener('afterprint', function(){
-  document.body.classList.remove('print-test-only','print-answers-only');
+  document.body.classList.remove(...PRINT_MODES);
 });
 </script>
 </body>
